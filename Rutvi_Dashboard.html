@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rutvi Fund">
+<title>Rutvi · Edu Fund</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%93%3C/text%3E%3C/svg%3E">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0a0e1a;
+    --card: #131829;
+    --card-2: #1a2138;
+    --border: #232b45;
+    --text: #ffffff;
+    --muted: #8892a8;
+    --green: #00d09c;
+    --red: #ff5b6b;
+    --amber: #ffb547;
+    --blue: #4cc9f0;
+    --purple: #b388ff;
+    --grad-1: linear-gradient(135deg, #00d09c 0%, #00b4d8 100%);
+    --grad-2: linear-gradient(135deg, #b388ff 0%, #4cc9f0 100%);
+    --grad-3: linear-gradient(135deg, #ffb547 0%, #ff5b6b 100%);
+  }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+  }
+  body {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 24px) 16px;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 4px 16px;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .header h1 span { color: var(--muted); font-weight: 400; font-size: 14px; display: block; margin-top: 2px; }
+  .refresh-btn {
+    width: 44px; height: 44px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.3s;
+  }
+  .refresh-btn:active { transform: scale(0.92); }
+  .refresh-btn.loading { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* HERO CARD */
+  .hero {
+    background: var(--grad-1);
+    border-radius: 24px;
+    padding: 22px 20px;
+    margin-bottom: 16px;
+    color: #061a14;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+  }
+  .hero-label {
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.75;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .hero-value {
+    font-size: 36px;
+    font-weight: 800;
+    margin: 8px 0 4px;
+    letter-spacing: -1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-sub {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-sub div { opacity: 0.85; }
+  .hero-sub b { display: block; font-size: 16px; opacity: 1; margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+  /* PROGRESS */
+  .progress-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .progress-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+  }
+  .progress-head .label { color: var(--muted); font-size: 13px; }
+  .progress-head .pct { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .progress-bar {
+    height: 10px;
+    background: var(--card-2);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--grad-1);
+    border-radius: 8px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+  .progress-fill.projected { background: var(--grad-2); }
+  .progress-fill.over { background: var(--grad-3); }
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* SECTION HEADERS */
+  .section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin: 22px 4px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .section-title .live-dot {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; color: var(--green); text-transform: none; letter-spacing: 0;
+  }
+  .live-dot .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 8px var(--green);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ASSET CARDS */
+  .asset-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .asset-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .asset-card .icon {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+  .asset-card .icon.equity { background: rgba(0, 208, 156, 0.15); color: var(--green); }
+  .asset-card .icon.bonds  { background: rgba(76, 201, 240, 0.15); color: var(--blue); }
+  .asset-card .icon.ssy    { background: rgba(255, 181, 71, 0.15); color: var(--amber); }
+  .asset-card .name { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .asset-card .value { font-size: 16px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; letter-spacing: -0.3px; }
+  .asset-card .pnl { font-size: 11px; margin-top: 4px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .asset-card .pnl.up { color: var(--green); }
+  .asset-card .pnl.down { color: var(--red); }
+
+  /* HOLDINGS */
+  .holdings { background: var(--card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
+  .holding {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 2px 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .holding:last-child { border-bottom: none; }
+  .holding.total { background: var(--card-2); font-weight: 700; }
+  .h-name { font-size: 14px; font-weight: 600; }
+  .h-qty { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .h-value { font-size: 14px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+  .h-price { font-size: 11px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+  .h-price .chg { color: var(--green); margin-left: 6px; }
+  .h-price .chg.down { color: var(--red); }
+
+  /* PROJECTION */
+  .projection {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 18px;
+  }
+  .proj-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .proj-row:last-child { border-bottom: none; }
+  .proj-label { font-size: 13px; color: var(--muted); }
+  .proj-value { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .proj-value.gap-pos { color: var(--green); }
+  .proj-value.gap-neg { color: var(--red); }
+  .slider-row { padding: 14px 0 4px; }
+  .slider-row .slider-head {
+    display: flex; justify-content: space-between; margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .slider-row .slider-head .val { font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
+  input[type=range] {
+    width: 100%; height: 6px; appearance: none; background: var(--card-2); border-radius: 3px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    appearance: none; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--green); border: 3px solid var(--bg); cursor: pointer;
+    box-shadow: 0 0 0 1px var(--green);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 22px; height: 22px; border-radius: 50%; background: var(--green);
+    border: 3px solid var(--bg); cursor: pointer;
+  }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 22px;
+    line-height: 1.6;
+  }
+  .footer .updated { color: var(--green); }
+  .stale { color: var(--amber) !important; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom) + 20px);
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    transition: transform 0.3s;
+    z-index: 100;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Rutvi <span id="ageLabel">Education Fund</span></h1>
+  <button class="refresh-btn" id="refreshBtn" aria-label="Refresh">↻</button>
+</div>
+
+<!-- HERO: Total portfolio -->
+<div class="hero">
+  <div class="hero-label">Total Portfolio</div>
+  <div class="hero-value" id="totalValue">₹—</div>
+  <div class="hero-sub">
+    <div>Invested<b id="totalInvested">₹—</b></div>
+    <div style="text-align:right">P&amp;L<b id="totalPnl">—</b></div>
+  </div>
+</div>
+
+<!-- PROGRESS to ₹8Cr -->
+<div class="progress-card">
+  <div class="progress-head">
+    <span class="label">Today's value vs ₹8 Cr</span>
+    <span class="pct" id="progressPct">—%</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-meta">
+    <span id="progressLeft">— left</span>
+    <span>Snapshot · no growth</span>
+  </div>
+
+  <div class="progress-head" style="margin-top:18px">
+    <span class="label">Projected at maturity vs ₹8 Cr</span>
+    <span class="pct" id="projPct">—%</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill projected" id="projFill" style="width:0%"></div></div>
+  <div class="progress-meta">
+    <span id="projGapMini">—</span>
+    <span id="progressEta">Target Apr 2041</span>
+  </div>
+</div>
+
+<!-- ASSET BREAKDOWN -->
+<div class="section-title">Assets</div>
+<div class="asset-grid">
+  <div class="asset-card">
+    <div class="icon equity">📈</div>
+    <div class="name">Equity</div>
+    <div class="value" id="equityValue">₹—</div>
+    <div class="pnl" id="equityPnl">—</div>
+  </div>
+  <div class="asset-card">
+    <div class="icon bonds">🏦</div>
+    <div class="name">Bonds</div>
+    <div class="value" id="bondsValue">₹—</div>
+    <div class="pnl" id="bondsPnl">—</div>
+  </div>
+  <div class="asset-card">
+    <div class="icon ssy">🎓</div>
+    <div class="name">SSY</div>
+    <div class="value" id="ssyValue">₹—</div>
+    <div class="pnl" id="ssyPnl">—</div>
+  </div>
+</div>
+
+<!-- HOLDINGS -->
+<div class="section-title">
+  Holdings
+  <span class="live-dot"><span class="dot"></span><span id="liveStatus">LIVE</span></span>
+</div>
+<div class="holdings" id="holdingsList"></div>
+
+<!-- PLANNED INVESTMENTS -->
+<div id="plannedSection" style="display:none">
+  <div class="section-title">Planned Investments</div>
+  <div class="holdings" id="plannedList"></div>
+</div>
+
+<!-- PROJECTION -->
+<div class="section-title">Projection at Maturity (Apr 2041)</div>
+<div class="projection">
+  <div class="slider-row">
+    <div class="slider-head"><span>Equity CAGR assumption</span><span class="val" id="cagrVal">14.0%</span></div>
+    <input type="range" id="cagrSlider" min="6" max="18" step="0.5" value="14">
+  </div>
+  <div class="proj-row">
+    <span class="proj-label">Equity FV</span>
+    <span class="proj-value" id="projEquity">₹—</span>
+  </div>
+  <div class="proj-row">
+    <span class="proj-label">Bonds FV @ 7.5%</span>
+    <span class="proj-value" id="projBonds">₹—</span>
+  </div>
+  <div class="proj-row">
+    <span class="proj-label">SSY FV @ 8% (+₹1.5L/yr)</span>
+    <span class="proj-value" id="projSSY">₹—</span>
+  </div>
+  <div class="proj-row" id="projPlannedRow" style="display:none">
+    <span class="proj-label">Planned investments FV</span>
+    <span class="proj-value" id="projPlanned" style="color:var(--purple)">₹—</span>
+  </div>
+  <div class="proj-row">
+    <span class="proj-label" style="font-weight:700;color:var(--text)">Projected Total</span>
+    <span class="proj-value" id="projTotal" style="font-size:18px">₹—</span>
+  </div>
+  <div class="proj-row">
+    <span class="proj-label">Gap to ₹8 Cr</span>
+    <span class="proj-value" id="projGap">—</span>
+  </div>
+</div>
+
+<div class="footer">
+  <div>Updated <span class="updated" id="updatedTime">—</span></div>
+  <div>Bonds 7.5% daily · SSY 8% + ₹1.5L April top-up · Live NSE prices</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =========================
+// CONFIG (mirrors Rutvi.xlsx)
+// =========================
+const CFG = {
+  targetAmount: 80000000,     // ₹8 Cr
+  targetDate: new Date(2041, 3, 29),  // 15 years from today (Apr 29, 2041)
+  daughterAge: 3,
+
+  ssy: {
+    anchorBalance: 669000,
+    anchorDate: new Date(2026, 3, 1),  // Apr 1, 2026
+    rate: 0.08,
+    annualTopup: 150000,
+    topupMonth: 3,   // April (0-indexed)
+    topupDay: 1,
+    finalTopupYear: 2041, // last contribution before maturity
+  },
+
+  bonds: {
+    principal: 3350000,
+    rate: 0.075,
+    startDate: new Date(2026, 0, 1),
+  },
+
+  holdings: [
+    { name: 'MID150BEES', symbol: 'MID150BEES.NS', qty: 27110, fallback: 230.59 },
+    { name: 'SOUTHBANK',  symbol: 'SOUTHBANK.NS',  qty: 17350, fallback: 40.00 },
+    { name: 'AVANTIFEED', symbol: 'AVANTIFEED.NS', qty: 250,   fallback: 1420.40 },
+    { name: 'MOTHERSON',  symbol: 'MOTHERSON.NS',  qty: 1865,  fallback: 125.11 },
+    { name: 'HEG',        symbol: 'HEG.NS',        qty: 270,   fallback: 662.85 },
+    { name: 'SCI',        symbol: 'SCI.NS',        qty: 332,   fallback: 311.89 },
+    { name: 'CHENNPETRO', symbol: 'CHENNPETRO.NS', qty: 94,    fallback: 1128.25 },
+    { name: 'UJJIVANSFB', symbol: 'UJJIVANSFB.NS', qty: 1125,  fallback: 56.86 },
+    { name: 'DATAPATTNS', symbol: 'DATAPATTNS.NS', qty: 27,    fallback: 4107.50 },
+    { name: 'CIEINDIA',   symbol: 'CIEINDIA.NS',   qty: 215,   fallback: 474.30 },
+  ],
+
+  invested: {
+    ssy: 669000,
+    bonds: 3350000,
+    equity: 8000000,
+  },
+
+  // Future planned investments — don't affect today's value, only projection.
+  // To remove, just delete the entry from this array.
+  plannedInvestments: [],
+};
+
+// =========================
+// FORMATTERS
+// =========================
+const fmtINR = (n) => {
+  if (n === null || n === undefined || isNaN(n)) return '₹—';
+  if (n >= 10000000) return '₹' + (n/10000000).toFixed(2) + ' Cr';
+  if (n >= 100000)   return '₹' + (n/100000).toFixed(2) + ' L';
+  if (n >= 1000)     return '₹' + (n/1000).toFixed(1) + 'K';
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+};
+const fmtINRFull = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
+const fmtPct = (n) => (n>=0?'+':'') + n.toFixed(2) + '%';
+
+// =========================
+// CALCULATIONS
+// =========================
+function calcSSY(asOf = new Date()) {
+  // Build balance: walk year by year from anchorDate, applying top-ups each April 1
+  const cfg = CFG.ssy;
+  let bal = cfg.anchorBalance;
+  let lastDate = new Date(cfg.anchorDate);
+  // iterate to current
+  while (true) {
+    // next April 1 strictly after lastDate
+    const nextYear = lastDate.getFullYear() + 1;
+    const nextTopup = new Date(nextYear, cfg.topupMonth, cfg.topupDay);
+    if (nextTopup > asOf) break;
+    // grow from lastDate to nextTopup
+    const dt = (nextTopup - lastDate) / (365.25*86400000);
+    bal = bal * Math.pow(1 + cfg.rate, dt);
+    bal += cfg.annualTopup;
+    lastDate = nextTopup;
+  }
+  // grow remainder
+  const dt = (asOf - lastDate) / (365.25*86400000);
+  bal = bal * Math.pow(1 + cfg.rate, dt);
+  return bal;
+}
+
+function calcBonds(asOf = new Date()) {
+  const cfg = CFG.bonds;
+  const days = Math.max(0, (asOf - cfg.startDate) / 86400000);
+  return cfg.principal * Math.pow(1 + cfg.rate/365, days);
+}
+
+// Future-value projections
+function projectSSY(targetDate) {
+  const cfg = CFG.ssy;
+  let bal = cfg.anchorBalance;
+  let lastDate = new Date(cfg.anchorDate);
+  while (true) {
+    const nextYear = lastDate.getFullYear() + 1;
+    if (nextYear > cfg.finalTopupYear) break;
+    const nextTopup = new Date(nextYear, cfg.topupMonth, cfg.topupDay);
+    if (nextTopup > targetDate) break;
+    const dt = (nextTopup - lastDate) / (365.25*86400000);
+    bal = bal * Math.pow(1 + cfg.rate, dt);
+    bal += cfg.annualTopup;
+    lastDate = nextTopup;
+  }
+  const dt = (targetDate - lastDate) / (365.25*86400000);
+  bal = bal * Math.pow(1 + cfg.rate, dt);
+  return bal;
+}
+
+function projectBonds(targetDate) {
+  const cfg = CFG.bonds;
+  const days = (targetDate - cfg.startDate) / 86400000;
+  return cfg.principal * Math.pow(1 + cfg.rate/365, days);
+}
+
+function projectEquity(currentValue, cagr, targetDate) {
+  const yrs = (targetDate - new Date()) / (365.25*86400000);
+  return currentValue * Math.pow(1 + cagr, yrs);
+}
+
+// =========================
+// LIVE PRICE FETCH
+// =========================
+async function fetchPrice(symbol) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=2d`;
+  const proxies = [
+    u => u, // try direct first
+    u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+    u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  ];
+  for (const wrap of proxies) {
+    try {
+      const r = await fetch(wrap(url), { cache: 'no-store' });
+      if (!r.ok) continue;
+      const j = await r.json();
+      const meta = j?.chart?.result?.[0]?.meta;
+      if (meta?.regularMarketPrice) {
+        return {
+          price: meta.regularMarketPrice,
+          prevClose: meta.chartPreviousClose || meta.previousClose || meta.regularMarketPrice,
+          ok: true,
+        };
+      }
+    } catch (e) {}
+  }
+  return { ok: false };
+}
+
+async function fetchAllPrices() {
+  const results = await Promise.all(CFG.holdings.map(async h => {
+    const p = await fetchPrice(h.symbol);
+    return { ...h, ...(p.ok ? { price: p.price, prevClose: p.prevClose, live: true } : { price: h.fallback, prevClose: h.fallback, live: false }) };
+  }));
+  return results;
+}
+
+// =========================
+// RENDER
+// =========================
+function renderHoldings(holdings) {
+  const list = document.getElementById('holdingsList');
+  let total = 0;
+  let totalPrev = 0;
+  let html = '';
+  for (const h of holdings) {
+    const value = h.price * h.qty;
+    const prevValue = h.prevClose * h.qty;
+    total += value;
+    totalPrev += prevValue;
+    const liveMark = h.live ? '' : '<span style="color:var(--amber);font-size:9px;margin-left:4px">●</span>';
+    html += `
+      <div class="holding">
+        <div class="h-name">${h.name}${liveMark}</div>
+        <div class="h-value">${fmtINR(value)}</div>
+        <div class="h-qty">${h.qty.toLocaleString('en-IN')} @ ₹${h.price.toFixed(2)}</div>
+      </div>`;
+  }
+  html += `
+    <div class="holding total">
+      <div class="h-name">Equity Total</div>
+      <div class="h-value">${fmtINR(total)}</div>
+      <div class="h-qty">${holdings.length} holdings</div>
+    </div>`;
+  list.innerHTML = html;
+  return { total, totalPrev };
+}
+
+function renderAll(holdings) {
+  const { total: equityValue } = renderHoldings(holdings);
+  const bondsValue = calcBonds();
+  const ssyValue = calcSSY();
+  const totalValue = equityValue + bondsValue + ssyValue;
+  const totalInvested = CFG.invested.ssy + CFG.invested.bonds + CFG.invested.equity;
+  const pnl = totalValue - totalInvested;
+  const pnlPct = (pnl/totalInvested)*100;
+
+  // Hero
+  document.getElementById('totalValue').textContent = fmtINR(totalValue);
+  document.getElementById('totalInvested').textContent = fmtINR(totalInvested);
+  document.getElementById('totalPnl').textContent = fmtINR(pnl) + ' (' + fmtPct(pnlPct) + ')';
+
+  // Progress
+  const pct = (totalValue / CFG.targetAmount) * 100;
+  document.getElementById('progressPct').textContent = pct.toFixed(2) + '%';
+  document.getElementById('progressFill').style.width = Math.min(100, pct) + '%';
+  document.getElementById('progressLeft').textContent = fmtINR(CFG.targetAmount - totalValue) + ' to go';
+
+  // Asset cards
+  document.getElementById('equityValue').textContent = fmtINR(equityValue);
+  const eqPnl = equityValue - CFG.invested.equity;
+  const eqEl = document.getElementById('equityPnl');
+  eqEl.textContent = fmtPct((eqPnl/CFG.invested.equity)*100);
+  eqEl.className = 'pnl ' + (eqPnl >= 0 ? 'up' : 'down');
+
+  document.getElementById('bondsValue').textContent = fmtINR(bondsValue);
+  const bdPnl = bondsValue - CFG.invested.bonds;
+  const bdEl = document.getElementById('bondsPnl');
+  bdEl.textContent = fmtPct((bdPnl/CFG.invested.bonds)*100);
+  bdEl.className = 'pnl ' + (bdPnl >= 0 ? 'up' : 'down');
+
+  document.getElementById('ssyValue').textContent = fmtINR(ssyValue);
+  const ssyPnl = ssyValue - CFG.invested.ssy;
+  const ssyEl = document.getElementById('ssyPnl');
+  ssyEl.textContent = fmtPct((ssyPnl/CFG.invested.ssy)*100);
+  ssyEl.className = 'pnl ' + (ssyPnl >= 0 ? 'up' : 'down');
+
+  // Age
+  document.getElementById('ageLabel').textContent = `Age ${CFG.daughterAge} · 15 yr horizon`;
+
+  // Projection
+  renderProjection(equityValue);
+
+  // Updated time
+  const now = new Date();
+  document.getElementById('updatedTime').textContent = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+
+  // Live status
+  const anyStale = holdings.some(h => !h.live);
+  const liveEl = document.getElementById('liveStatus');
+  liveEl.textContent = anyStale ? 'CACHED' : 'LIVE';
+  liveEl.parentElement.querySelector('.dot').style.background = anyStale ? 'var(--amber)' : 'var(--green)';
+  liveEl.parentElement.querySelector('.dot').style.boxShadow = anyStale ? '0 0 8px var(--amber)' : '0 0 8px var(--green)';
+}
+
+function renderPlanned(planned, cagr) {
+  const sec = document.getElementById('plannedSection');
+  const list = document.getElementById('plannedList');
+  if (!planned.length) { sec.style.display = 'none'; return; }
+  sec.style.display = '';
+  let html = '';
+  for (const p of planned) {
+    const yrs = (CFG.targetDate - p.date) / (365.25*86400000);
+    const r = p.assetType === 'bonds' ? CFG.bonds.rate : p.assetType === 'ssy' ? CFG.ssy.rate : cagr;
+    const fv = p.amount * Math.pow(1 + r, yrs);
+    const dateStr = p.date.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    html += `
+      <div class="holding">
+        <div class="h-name">${p.name} <span style="color:var(--purple);font-size:10px;margin-left:4px">●PLANNED</span></div>
+        <div class="h-value">${fmtINR(p.amount)}</div>
+        <div class="h-qty">${dateStr} · ${p.assetType} @ ${(r*100).toFixed(1)}%</div>
+        <div class="h-price">→ ${fmtINR(fv)} @ maturity</div>
+      </div>`;
+  }
+  list.innerHTML = html;
+}
+
+function renderProjection(equityNow) {
+  const cagr = parseFloat(document.getElementById('cagrSlider').value) / 100;
+  document.getElementById('cagrVal').textContent = (cagr*100).toFixed(1) + '%';
+
+  const eqFV = projectEquity(equityNow, cagr, CFG.targetDate);
+  const bdFV = projectBonds(CFG.targetDate);
+  const ssyFV = projectSSY(CFG.targetDate);
+
+  // Planned future investments
+  let plannedFV = 0;
+  const planned = (CFG.plannedInvestments || []).filter(p => p.date > new Date());
+  for (const p of planned) {
+    const yrs = (CFG.targetDate - p.date) / (365.25*86400000);
+    if (yrs <= 0) continue;
+    const r = p.assetType === 'bonds' ? CFG.bonds.rate : p.assetType === 'ssy' ? CFG.ssy.rate : cagr;
+    plannedFV += p.amount * Math.pow(1 + r, yrs);
+  }
+  renderPlanned(planned, cagr);
+
+  const total = eqFV + bdFV + ssyFV + plannedFV;
+  const gap = total - CFG.targetAmount;
+
+  document.getElementById('projEquity').textContent = fmtINR(eqFV);
+  document.getElementById('projBonds').textContent = fmtINR(bdFV);
+  document.getElementById('projSSY').textContent = fmtINR(ssyFV);
+  document.getElementById('projTotal').textContent = fmtINR(total);
+  const plannedRow = document.getElementById('projPlannedRow');
+  if (plannedFV > 0) {
+    plannedRow.style.display = '';
+    document.getElementById('projPlanned').textContent = '+' + fmtINR(plannedFV);
+  } else {
+    plannedRow.style.display = 'none';
+  }
+
+  const gapEl = document.getElementById('projGap');
+  gapEl.textContent = (gap >= 0 ? '+' : '') + fmtINR(Math.abs(gap)) + (gap >= 0 ? ' surplus' : ' short');
+  gapEl.className = 'proj-value ' + (gap >= 0 ? 'gap-pos' : 'gap-neg');
+
+  // Projected progress bar (top section)
+  const projPct = (total / CFG.targetAmount) * 100;
+  document.getElementById('projPct').textContent = projPct.toFixed(1) + '%';
+  const projFill = document.getElementById('projFill');
+  projFill.style.width = Math.min(100, projPct) + '%';
+  projFill.classList.toggle('over', projPct >= 100);
+  const gapMini = document.getElementById('projGapMini');
+  gapMini.textContent = (gap >= 0 ? '+' : '') + fmtINR(Math.abs(gap)) + (gap >= 0 ? ' surplus' : ' short');
+  gapMini.style.color = gap >= 0 ? 'var(--green)' : 'var(--red)';
+}
+
+// =========================
+// REFRESH FLOW
+// =========================
+let lastHoldings = null;
+async function refresh() {
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('loading');
+  try {
+    const holdings = await fetchAllPrices();
+    lastHoldings = holdings;
+    localStorage.setItem('rutvi_lastPrices', JSON.stringify(holdings.map(h => ({ symbol: h.symbol, price: h.price, prevClose: h.prevClose, ts: Date.now() }))));
+    renderAll(holdings);
+    showToast('Prices refreshed');
+  } catch (e) {
+    showToast('Refresh failed — using cached');
+  } finally {
+    btn.classList.remove('loading');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// Restore cached prices instantly while live ones fetch
+function loadCached() {
+  try {
+    const raw = localStorage.getItem('rutvi_lastPrices');
+    if (!raw) return null;
+    const cache = JSON.parse(raw);
+    return CFG.holdings.map(h => {
+      const c = cache.find(x => x.symbol === h.symbol);
+      return { ...h, price: c?.price ?? h.fallback, prevClose: c?.prevClose ?? h.fallback, live: false };
+    });
+  } catch (e) { return null; }
+}
+
+// =========================
+// INIT
+// =========================
+document.getElementById('refreshBtn').addEventListener('click', refresh);
+document.getElementById('cagrSlider').addEventListener('input', () => {
+  if (lastHoldings) {
+    const eq = lastHoldings.reduce((s,h) => s + h.price*h.qty, 0);
+    renderProjection(eq);
+  }
+});
+
+// Initial paint with cache, then live fetch
+const cached = loadCached() || CFG.holdings.map(h => ({ ...h, price: h.fallback, prevClose: h.fallback, live: false }));
+lastHoldings = cached;
+renderAll(cached);
+refresh();
+
+// Update time-based values (bonds/SSY) every 30s
+setInterval(() => { if (lastHoldings) renderAll(lastHoldings); }, 30000);
+
+// Auto-refresh prices every 5 min during market hours (9:15 - 15:30 IST, M-F)
+setInterval(() => {
+  const now = new Date();
+  const istHour = (now.getUTCHours() + 5 + (now.getUTCMinutes()+30)/60) % 24;
+  const day = now.getUTCDay(); // 0=Sun, 6=Sat
+  if (day >= 1 && day <= 5 && istHour >= 9.25 && istHour <= 15.5) {
+    refresh();
+  }
+}, 5 * 60 * 1000);
+</script>
+</body>
+</html>
